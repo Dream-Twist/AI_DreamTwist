@@ -8,12 +8,12 @@ Date        Author      Status      Description
 2024.07.27  이유민      Created     
 2024.07.27  이유민      Modified    동화 생성 함수 추가
 2024.07.27  이유민      Modified    동화 문단 나누기 함수 추가
+2024.07.29  원경혜      Modified    import에서 re, pipeline 삭제
 '''
 
 import torch
 import os
-import re
-from transformers import PreTrainedTokenizerFast, GPT2LMHeadModel, pipeline
+from transformers import PreTrainedTokenizerFast, GPT2LMHeadModel
 
 # 모델과 토크나이저 로드
 current_dir = os.path.dirname(os.path.abspath(__file__))
