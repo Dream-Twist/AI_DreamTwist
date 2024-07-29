@@ -2,4 +2,4 @@ flask
 torch
 transformers
 flask_restx
--e ./models/py-hanspell
+-e ./models/py_hanspell
