@@ -7,13 +7,14 @@ History
 Date        Author      Status      Description
 2024.07.28  이유민      Created     
 2024.07.28  이유민      Modified    동화 생성 추가
+2024.08.03  이유민      Modified    주제 및 제목 추가
 '''
-
+import json
 from flask import request, jsonify
 from flask_restx import Namespace, Resource, fields
 from models.py_hanspell.hanspell.spell_checker import check  # 맞춤법 검사
 from src.models.story_generator import makeStory, model, tokenizer    # 동화 관련
-from src.utils.helpers import splitText, splitParagraphs, truncateSentence  # 글자 수 자르기
+from src.utils.helpers import splitText, splitParagraphs, truncateSentence, generateThemeAndTitle
 
 story_api = Namespace('Story', description='AI 동화 스토리 생성')
 
@@ -42,7 +43,7 @@ class Speller(Resource):
         # AI 스토리 생성
         generated_story = generate_story_endpoint(prompt)
 
-        return {"story": generated_story}, 201
+        return generated_story, 201
 
 def generate_story_endpoint(prompt):
     story = makeStory(prompt, model, tokenizer) # 동화 생성
@@ -57,10 +58,14 @@ def generate_story_endpoint(prompt):
         corrected_text = ''.join(corrected_text)
     except:
         corrected_text = story  # 맞춤법 검사 오류날 경우
+    
+    # 생성된 스토리 바탕으로 주제와 제목 정하기
+    themeAndTitle = generateThemeAndTitle(story)
 
     # 마지막 문장 종료되었는지 확인
     story = truncateSentence(corrected_text)
 
     # 문단 분리
     story = splitParagraphs(story, num_paragraphs = 6)
-    return story
+
+    return {"theme": themeAndTitle["theme"], "title": themeAndTitle["title"], "story": story}

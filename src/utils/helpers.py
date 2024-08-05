@@ -9,9 +9,17 @@ Date        Author      Status      Description
 2024.07.27  이유민      Modified    동화 자르기 추가
 2024.07.29  이유민      Modified    문단 나누기 추가
 2024.07.29  이유민      Modified    마지막 문장 확인 추가
+2024.08.03  이유민      Modified    주제 및 제목 추가
 '''
 
 import re
+import openai
+import json
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+openai.api_key = os.environ.get('OPENAI_API_KEY')
 
 # 맞춤법 검사에 사용될 동화 자르기 함수
 def splitText(text, chunk_size=490):
@@ -77,3 +85,33 @@ def truncateSentence(story):
     else:
         # 마지막 문장이 정상적으로 종료된 경우, 원래 텍스트 반환
         return story.strip()
+
+# 생성된 동화 스토리에 맞는 주제와 제목 추천
+def generateThemeAndTitle(story):
+    qa_system_prompt = """
+    당신은 사용자의 요청에 따라 동화의 주제와 제목을 제시하는 역할을 합니다.
+    사용자가 입력한 내용에 기반하여 관련성 있는 동화의 주제와 제목을 생성해 주세요.
+    동화의 주제는 우화, 환경, 사랑, 모험, 추리, 기타 중 하나로 정해야 하며, 사용자가 입력한 내용과 관련이 있어야 합니다.
+    제목은 동화의 내용을 잘 반영하면서도 창의적이고 매력적인 제목으로 작성되어야 합니다. 독자들에게 흥미를 주고 동화의 내용을 잘 표현할 수 있도록 신경 써주세요.
+    결과는 JSON 형태로 다음과 같은 형태를 따라야 합니다:
+    {
+        "theme": "동화의 주제",
+        "title": "동화스럽고 매력적인 동화의 제목"
+    }
+
+    입력된 내용: {input}
+    """
+
+    # OpenAI의 ChatCompletion API를 사용하여 동화의 주제와 제목을 생성
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": qa_system_prompt},
+            {"role": "user", "content": story}
+        ],
+        max_tokens=150,  
+        temperature=0.7  
+    )
+    # 생성된 응답 반환
+    result = response.choices[0].message['content'].strip()
+    return json.loads(result)
